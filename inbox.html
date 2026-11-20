@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Tablero SAAC · Luis Miguel</title>
+<style>
+:root{color-scheme:dark;--bg:#0c0f14;--panel:rgba(255,255,255,.055);--line:rgba(255,255,255,.1);--tx:#e8ecf2;--mut:#8b95a5;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--tx);font-family:Inter,"Segoe UI",system-ui,-apple-system,sans-serif;-webkit-tap-highlight-color:transparent}
+#root{min-height:100vh}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);background:var(--bg);z-index:30}
+.intro{position:fixed;inset:0;display:grid;place-items:center;background:radial-gradient(ellipse at 50% 40%,#18202c,#090b0f 70%);transition:opacity .8s,transform .8s;z-index:20}
+.intro.out{opacity:0;transform:scale(1.08);pointer-events:none}
+.intro canvas{position:absolute;inset:0;width:100%;height:100%}
+.hero{position:relative;text-align:center;padding:24px;pointer-events:none}
+.hero small{letter-spacing:.5em;color:var(--mut);font-size:12px;text-transform:uppercase}
+.hero h1{margin:14px 0 34px;font-size:clamp(40px,9vw,92px);font-weight:300;letter-spacing:.04em;line-height:1.05;text-shadow:0 0 40px rgba(120,170,255,.35)}
+.hero h1 b{font-weight:700;background:linear-gradient(120deg,#9ec5ff,#c6a4ff);-webkit-background-clip:text;background-clip:text;color:transparent}
+.go{pointer-events:auto;cursor:pointer;border:0;font:600 18px inherit;letter-spacing:.2em;text-transform:uppercase;color:#fff;padding:18px 54px;border-radius:16px;background:linear-gradient(180deg,#5b8def,#3b62c4);box-shadow:0 8px 0 #243f87,0 18px 34px rgba(60,100,220,.45),inset 0 1px 0 rgba(255,255,255,.35);transition:transform .12s,box-shadow .12s}
+.go:hover{transform:translateY(-2px)}
+.go:active{transform:translateY(7px);box-shadow:0 1px 0 #243f87,0 6px 14px rgba(60,100,220,.4),inset 0 1px 0 rgba(255,255,255,.3)}
+.app{max-width:1280px;margin:0 auto;padding:14px 16px 40px;animation:in .8s}
+@keyframes in{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:10;background:linear-gradient(var(--bg) 82%,transparent);padding:8px 0 12px}
+.sent{display:flex;gap:8px;align-items:center;min-height:68px;padding:10px 12px;border-radius:16px;background:var(--panel);border:1px solid var(--line);backdrop-filter:blur(14px);box-shadow:0 10px 30px rgba(0,0,0,.35)}
+.chips{flex:1;display:flex;gap:6px;flex-wrap:wrap;min-width:0}
+.chip{padding:7px 12px;border-radius:10px;font-size:15px;font-weight:600;background:rgba(255,255,255,.08);border-left:3px solid var(--c)}
+.ph{color:var(--mut);font-size:14px}
+.btn{cursor:pointer;border:1px solid var(--line);background:var(--panel);color:var(--tx);padding:9px 14px;border-radius:11px;font:500 13px inherit;display:inline-flex;gap:7px;align-items:center;backdrop-filter:blur(10px)}
+.btn:hover{background:rgba(255,255,255,.1)}
+.btn.pri{background:linear-gradient(180deg,#5b8def,#3b62c4);border-color:transparent;font-weight:600}
+.btn.on{background:rgba(255,190,80,.18);border-color:rgba(255,190,80,.6)}
+.btn svg{width:16px;height:16px}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;align-items:center}
+.tab{--c:#fff;cursor:pointer;border:1px solid var(--line);background:var(--panel);color:var(--mut);padding:8px 14px;border-radius:999px;font:500 13px inherit}
+.tab.sel{color:var(--tx);border-color:var(--c);box-shadow:0 0 14px -4px var(--c)}
+.sp{flex:1}
+.panel{margin-top:10px;padding:12px 14px;border-radius:14px;background:rgba(255,190,80,.07);border:1px solid rgba(255,190,80,.3);font-size:13px;color:#e9d9b8;display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.panel code{color:#fff;background:rgba(255,255,255,.08);padding:1px 6px;border-radius:6px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(132px,1fr));gap:16px;margin-top:14px;perspective:1100px}
+.card{--c:#fff;--rx:0deg;--ry:0deg;position:relative;cursor:pointer;border:0;padding:0;color:var(--tx);text-align:center;border-radius:18px;background:linear-gradient(160deg,#222a37,#141a23);box-shadow:0 1px 0 rgba(255,255,255,.12) inset,0 -2px 0 rgba(0,0,0,.4) inset,0 7px 0 #080b10,0 16px 26px rgba(0,0,0,.5);transform:rotateX(var(--rx)) rotateY(var(--ry));transform-style:preserve-3d;transition:transform .15s ease-out,box-shadow .12s;overflow:visible;font:inherit}
+.card::before{content:"";position:absolute;left:14px;right:14px;top:0;height:3px;border-radius:0 0 4px 4px;background:var(--c);box-shadow:0 0 14px var(--c)}
+.card:hover{box-shadow:0 1px 0 rgba(255,255,255,.14) inset,0 -2px 0 rgba(0,0,0,.4) inset,0 7px 0 #080b10,0 20px 34px rgba(0,0,0,.55),0 0 26px -8px var(--c)}
+.card:active{transform:translateZ(-6px) translateY(6px) scale(.97);box-shadow:0 1px 0 rgba(255,255,255,.1) inset,0 1px 0 #080b10,0 4px 8px rgba(0,0,0,.5);transition:transform .05s}
+.pic{margin:14px 12px 8px;aspect-ratio:1;border-radius:12px;overflow:hidden;display:grid;place-items:center;background:rgba(255,255,255,.04);color:var(--c);transform:translateZ(18px)}
+.pic img{width:100%;height:100%;object-fit:cover;display:block}
+.pic svg{width:48%;height:48%}
+.lbl{padding:0 8px 14px;font-size:13px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;transform:translateZ(12px)}
+.edit .card{outline:2px dashed rgba(255,190,80,.55);outline-offset:3px}
+.rm{position:absolute;top:-8px;right:-8px;width:26px;height:26px;border-radius:50%;border:0;background:#c24;color:#fff;cursor:pointer;font-size:14px;line-height:1;z-index:2;box-shadow:0 3px 8px rgba(0,0,0,.5)}
+.dot{position:absolute;top:8px;left:10px;width:8px;height:8px;border-radius:50%;background:#4ade80;z-index:2}
+.sent{flex-wrap:wrap}
+.b3{cursor:pointer;border:0;color:#fff;font:600 13px inherit;letter-spacing:.04em;padding:11px 16px;border-radius:12px;background:linear-gradient(180deg,#3a4252,#262d3a);box-shadow:0 4px 0 #0a0d12,0 9px 14px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.18);transition:transform .1s,box-shadow .1s}
+.b3.pri{background:linear-gradient(180deg,#5b8def,#3b62c4);box-shadow:0 4px 0 #243f87,0 9px 16px rgba(60,100,220,.35),inset 0 1px 0 rgba(255,255,255,.3)}
+.b3:hover{transform:translateY(-1px)}
+.b3:active{transform:translateY(4px);box-shadow:0 0 0 #000,0 2px 6px rgba(0,0,0,.4)}
+.shell{display:grid;grid-template-columns:210px 1fr;gap:22px;align-items:start;margin-top:6px}
+.side{position:sticky;top:calc(env(safe-area-inset-top,0px) + 170px);display:flex;flex-direction:column;gap:6px}
+.side .tab{border-radius:12px;text-align:left;padding:10px 14px;border-left:3px solid var(--c)}
+.shell .grid{margin-top:0}
+.rng{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--mut)}
+.rng input{accent-color:#5b8def;width:110px}
+@media(max-width:860px){.shell{grid-template-columns:1fr}.side{position:static;flex-direction:row;overflow-x:auto;padding-bottom:6px}.side .tab{white-space:nowrap;border-left-width:1px}.grid{grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:12px}}
+/* tema claro */
+:root{color-scheme:light;--bg:#fff;--panel:rgba(15,23,42,.04);--line:rgba(15,23,42,.13);--tx:#111827;--mut:#5b6576}
+.intro{background:radial-gradient(ellipse at 50% 40%,#fff,#eaeef6 80%)}
+.hero h1{text-shadow:none}
+.hero h1 b{background:linear-gradient(120deg,#3b62c4,#7c4dff);-webkit-background-clip:text;background-clip:text;color:transparent}
+.sent{box-shadow:0 8px 24px rgba(15,23,42,.1)}
+.chip{background:rgba(15,23,42,.06)}
+.btn:hover{background:rgba(15,23,42,.07)}
+.btn.on{background:rgba(255,190,80,.22);border-color:rgba(214,140,20,.7)}
+.card{background:linear-gradient(160deg,#fff,#edf0f6);box-shadow:0 1px 0 #fff inset,0 -2px 0 rgba(15,23,42,.07) inset,0 7px 0 #c5ccd9,0 16px 24px rgba(15,23,42,.18)}
+.card:hover{box-shadow:0 1px 0 #fff inset,0 -2px 0 rgba(15,23,42,.07) inset,0 7px 0 #c5ccd9,0 20px 32px rgba(15,23,42,.22),0 0 26px -8px var(--c)}
+.card:active{box-shadow:0 1px 0 #fff inset,0 1px 0 #c5ccd9,0 4px 8px rgba(15,23,42,.2)}
+.pic{background:rgba(15,23,42,.05)}
+.b3{color:#1f2937;background:linear-gradient(180deg,#fff,#e4e8f0);box-shadow:0 4px 0 #c3cad6,0 9px 14px rgba(15,23,42,.15),inset 0 1px 0 #fff}
+.b3.pri{color:#fff;background:linear-gradient(180deg,#5b8def,#3b62c4);box-shadow:0 4px 0 #243f87,0 9px 16px rgba(60,100,220,.35),inset 0 1px 0 rgba(255,255,255,.3)}
+.b3:active{box-shadow:0 0 0 #c3cad6,0 2px 6px rgba(15,23,42,.2)}
+.b3.pri:active{box-shadow:0 0 0 #243f87,0 2px 6px rgba(60,100,220,.4)}
+.panel{background:rgba(255,190,80,.14);border-color:rgba(214,140,20,.45);color:#6b4a00}
+.panel code{color:#111827;background:rgba(15,23,42,.08)}
+.tab.sel{background:rgba(15,23,42,.05)}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/htm@3.1.1/dist/htm.umd.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.383.0/dist/umd/lucide.min.js"></script>
+<script src="imagenes.js"></script>
+<script>
+const {useState,useEffect,useRef,useMemo}=React;
+const html=htm.bind(React.createElement);
+const NOMBRE="Luis Miguel";
+
+/* ===== CATEGORÍAS (adaptación sobria de la clave Fitzgerald) ===== */
+const CATS={
+ personas:{n:"Personas",c:"#f2c94c"},acciones:{n:"Acciones",c:"#4ade80"},objetos:{n:"Objetos y actividades",c:"#ff9f5a"},
+ social:{n:"Conceptos sociales",c:"#f472b6"},emociones:{n:"Emociones y estados",c:"#c084fc"},lugares:{n:"Lugares",c:"#38bdf8"},
+ tiempo:{n:"Tiempo y cantidades",c:"#2dd4bf"},basicas:{n:"Necesidades básicas",c:"#6c9bff"},transporte:{n:"Transporte y movilidad",c:"#a3e635"},
+ higiene:{n:"Higiene y cuidado",c:"#fb7185"},otros:{n:"Otros",c:"#a1a9b8"}
+};
+/* ===== VOCABULARIO (67): [palabra, ícono Lucide, ARCHIVO de imagen].
+   Las imágenes se buscan en la carpeta CARPETA, con el nombre en MAYÚSCULAS tal como está escrito abajo.
+   Si no aparece con esa extensión, prueba solo JPEG, JEPG, JPG, PNG y WEBP, con y sin tildes.
+   Si no encuentra ninguna, muestra el ícono. Cambia el nombre de archivo aquí si el tuyo es distinto. ===== */
+const CARPETA="imagenes/";
+const EXT=["JPEG","JEPG","JPG","PNG","WEBP"];
+const cand=f=>{const m=f.match(/^(.*)\.([^.]+)$/),b=m[1],e=m[2];
+  const bs=[...new Set([b,b.normalize("NFD").replace(/[\u0300-\u036f]/g,"")])],es=[...new Set([e,...EXT])];
+  return bs.flatMap(x=>es.map(y=>CARPETA+encodeURI(x+"."+y)))};
+const G=(cat,rows)=>rows.map(([palabra,icono,archivo])=>({palabra,cat,icono,archivo,imagen:CARPETA+archivo,cands:cand(archivo)}));
+const W=[
+...G("personas",[
+["Yo","User","YO.JPEG"],
+["Tú","UserCheck","TÚ.JPEG"],
+["Familia","Users","FAMILIA.JPEG"],
+["Amigo","Handshake","AMIGO.JPEG"]
+]),
+...G("acciones",[
+["Quiero","Sparkles","QUIERO.JPEG"],
+["Necesito","CircleAlert","NECESITO.JPEG"],
+["Ir","ArrowRight","IR.JPEG"],
+["Comer","Utensils","COMER.JPEG"],
+["Comprar","ShoppingCart","COMPRAR.JPEG"],
+["Hacer","Hammer","HACER.JPEG"],
+["Ayuda","LifeBuoy","AYUDA.JPEG"],
+["Me gusta","ThumbsUp","ME GUSTA.JPEG"]
+]),
+...G("objetos",[
+["Celular","Smartphone","CELULAR.JPEG"],
+["Música","Music","MÚSICA.JPEG"],
+["Comida","Soup","COMIDA.JPEG"],
+["Transporte","Bus","TRANSPORTE.JPEG"],
+["Trabajo","Briefcase","TRABAJO.JPEG"],
+["Estudiar","GraduationCap","ESTUDIAR.JPEG"],
+["Ver TV","Tv","VER TV.JPEG"],
+["Jugar","Gamepad2","JUGAR.JPEG"],
+["Deporte","Dumbbell","DEPORTE.JPEG"],
+["Leer","BookOpen","LEER.JPEG"]
+]),
+...G("social",[
+["Sí","Check","SÍ.JPEG"],
+["No","X","NO.JPEG"],
+["Gracias","HeartHandshake","GRACIAS.JPEG"],
+["Por favor","HandHeart","POR FAVOR.JPEG"],
+["No entiendo","CircleHelp","NO ENTIENDO.JPEG"]
+]),
+...G("emociones",[
+["Feliz","Smile","FELIZ.JPEG"],
+["Triste","Frown","TRISTE.JPEG"],
+["Enojado","Angry","ENOJADO.JPEG"],
+["Cansado","BatteryLow","CANSADO.JPEG"],
+["Me duele","Zap","ME DUELE.JPEG"],
+["Enfermo","Thermometer","ENFERMO.JPEG"],
+["Tranquilo","Leaf","TRANQUILO.JPEG"],
+["Preocupado","Meh","PREOCUPADO.JPEG"],
+["Emocionado","PartyPopper","EMOCIONADO.JPEG"],
+["Solo","UserRound","SOLO.JPEG"]
+]),
+...G("lugares",[
+["Casa","Home","CASA.JPEG"],
+["Colegio","School","COLEGIO.JPEG"],
+["Trabajo","Building2","TRABAJO.JPEG"],
+["Parque","Trees","PARQUE.JPEG"],
+["Tienda","Store","TIENDA.JPEG"]
+]),
+...G("tiempo",[
+["Ahora","Clock","AHORA.JPEG"],
+["Hoy","CalendarCheck","HOY.JPEG"],
+["Mañana","Sunrise","MAÑANA.JPEG"],
+["Día","Sun","DÍA.JPEG"],
+["Semana","CalendarDays","SEMANA.JPEG"]
+]),
+...G("basicas",[
+["Agua","GlassWater","AGUA.JPEG"],
+["Comida","Utensils","COMIDA.JPEG"],
+["Fruta","Apple","FRUTA.JPEG"],
+["Baño","Bath","BAÑO.JPEG"],
+["Descansar","BedDouble","DESCANSAR.JPEG"]
+]),
+...G("transporte",[
+["Carro","Car","CARRO.JPEG"],
+["Bus","Bus","BUS.JPEG"],
+["Taxi","CarTaxiFront","TAXI.JPEG"],
+["Bicicleta","Bike","BICICLETA.JPEG"],
+["Avión","Plane","AVIÓN.JPEG"]
+]),
+...G("higiene",[
+["Ducha","ShowerHead","DUCHA.JPEG"],
+["Cepillo","Brush","CEPILLO.JPEG"],
+["Jabón","Droplets","JABÓN.JPEG"],
+["Ropa","Shirt","ROPA.JPEG"],
+["Dormir","Moon","DORMIR.JPEG"]
+]),
+...G("otros",[
+["Dinero","Banknote","DINERO.JPEG"],
+["Llamar","Phone","LLAMAR.JPEG"],
+["Computadora","Laptop","COMPUTADORA.JPEG"],
+["Problema","TriangleAlert","PROBLEMA.JPEG"],
+["Amor","Heart","AMOR.JPEG"]
+])
+];
+
+/* ===== utilidades ===== */
+const norm=s=>s.replace(/\.[^.]+$/,"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toUpperCase().replace(/[_\-]+/g," ").replace(/\(\d+\)/g,"").replace(/\s+/g," ").trim();
+const key=w=>norm(w+".x");
+const KS=new Set(W.map(w=>key(w.palabra)));
+/* IndexedDB: guarda las imágenes subidas (clave = palabra normalizada) */
+const db=()=>new Promise((res,rej)=>{const r=indexedDB.open("saac-luis-miguel",1);r.onupgradeneeded=()=>r.result.createObjectStore("i");r.onsuccess=()=>res(r.result);r.onerror=()=>rej()});
+const dbAll=async()=>{const d=await db();return new Promise(res=>{const o={},q=d.transaction("i").objectStore("i").openCursor();q.onsuccess=()=>{const c=q.result;if(c){o[c.key]=c.value;c.continue()}else res(o)};q.onerror=()=>res(o)})};
+const dbSet=async(k,v)=>{try{const s=(await db()).transaction("i","readwrite").objectStore("i");v==null?s.delete(k):s.put(v,k)}catch(e){}};
+const dbClear=async()=>{try{(await db()).transaction("i","readwrite").objectStore("i").clear()}catch(e){}};
+
+function speak(t){
+  try{
+    const u=new SpeechSynthesisUtterance(t),vs=speechSynthesis.getVoices().filter(x=>/^es/i.test(x.lang));
+    const sc=v=>(/natural|neural|online/i.test(v.name)?4:0)+(/google|microsoft|siri|premium|enhanced/i.test(v.name)?2:0)+(/CO|MX|US|419/.test(v.lang)?1:0);
+    vs.sort((a,b)=>sc(b)-sc(a));if(vs[0]){u.voice=vs[0];u.lang=vs[0].lang}else u.lang="es-CO";
+    u.rate=window.__rate||.92;speechSynthesis.cancel();speechSynthesis.speak(u);
+  }catch(e){}
+}
+function shrink(file){
+  return new Promise((res,rej)=>{
+    const url=URL.createObjectURL(new Blob([file],{type:"image/jpeg"}));const im=new Image();
+    im.onload=()=>{const m=480,k=Math.min(1,m/Math.max(im.width,im.height));const c=document.createElement("canvas");
+      c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);c.getContext("2d").drawImage(im,0,0,c.width,c.height);
+      URL.revokeObjectURL(url);res(c.toDataURL("image/jpeg",.84))};
+    im.onerror=()=>{URL.revokeObjectURL(url);rej()};im.src=url;
+  });
+}
+function Ic({n}){
+  let node=null;try{const L=window.lucide&&lucide.icons;node=L&&(L[n]||L.Circle)}catch(e){}
+  if(!Array.isArray(node))return html`<span style=${{fontSize:34,fontWeight:700}}>${n[0]}</span>`;
+  return React.createElement("svg",{viewBox:"0 0 24 24",fill:"none",stroke:"currentColor",strokeWidth:1.6,strokeLinecap:"round",strokeLinejoin:"round"},
+    (Array.isArray(node[2])?node[2]:node).map(([t,a],i)=>React.createElement(t,{...a,key:i})));
+}
+
+/* ===== Intro 3D ===== */
+function Intro({onStart,leaving}){
+  const ref=useRef();
+  useEffect(()=>{
+    const el=ref.current;if(!el||!window.THREE)return;
+    const r=new THREE.WebGLRenderer({antialias:true,alpha:true});r.setPixelRatio(Math.min(devicePixelRatio,2));
+    r.setSize(el.clientWidth,el.clientHeight);el.appendChild(r.domElement);
+    const sc=new THREE.Scene(),cam=new THREE.PerspectiveCamera(60,el.clientWidth/el.clientHeight,.1,100);cam.position.z=9;
+    const N=1500,pos=new Float32Array(N*3),col=new Float32Array(N*3),pal=[[.23,.38,.77],[.49,.3,.9],[.1,.55,.5]];
+    for(let i=0;i<N;i++){const rad=3+Math.random()*9,a=Math.random()*6.283,b=Math.acos(2*Math.random()-1);
+      pos[i*3]=rad*Math.sin(b)*Math.cos(a);pos[i*3+1]=rad*Math.sin(b)*Math.sin(a);pos[i*3+2]=rad*Math.cos(b)-2;
+      const c=pal[i%3];col.set(c,i*3)}
+    const g=new THREE.BufferGeometry();g.setAttribute("position",new THREE.BufferAttribute(pos,3));g.setAttribute("color",new THREE.BufferAttribute(col,3));
+    const pts=new THREE.Points(g,new THREE.PointsMaterial({size:.05,vertexColors:true,transparent:true,opacity:.85}));sc.add(pts);
+    const shapes=[[1.6,-4,1.5,0],[1.1,4.5,-1.5,1],[.8,-3.5,-2.5,0],[1.3,3.5,2.2,1]].map(([s,x,y,t])=>{
+      const m=new THREE.Mesh(t?new THREE.OctahedronGeometry(s):new THREE.IcosahedronGeometry(s),new THREE.MeshBasicMaterial({color:t?0x7c4dff:0x3b62c4,wireframe:true,transparent:true,opacity:.35}));
+      m.position.set(x,y,-2);sc.add(m);return m});
+    let mx=0,my=0,raf;
+    const mv=e=>{const p=e.touches?e.touches[0]:e;mx=p.clientX/innerWidth-.5;my=p.clientY/innerHeight-.5};
+    addEventListener("pointermove",mv);addEventListener("touchmove",mv);
+    const rs=()=>{r.setSize(el.clientWidth,el.clientHeight);cam.aspect=el.clientWidth/el.clientHeight;cam.updateProjectionMatrix()};addEventListener("resize",rs);
+    const loop=()=>{raf=requestAnimationFrame(loop);pts.rotation.y+=.0006;pts.rotation.x+=.0002;
+      shapes.forEach((m,i)=>{m.rotation.x+=.003*(i+1);m.rotation.y+=.004});
+      cam.position.x+=(mx*3-cam.position.x)*.04;cam.position.y+=(-my*2-cam.position.y)*.04;cam.lookAt(0,0,0);r.render(sc,cam)};loop();
+    return()=>{cancelAnimationFrame(raf);removeEventListener("pointermove",mv);removeEventListener("touchmove",mv);removeEventListener("resize",rs);r.dispose();el.innerHTML=""};
+  },[]);
+  return html`<div className=${"intro"+(leaving?" out":"")}>
+    <div ref=${ref} style=${{position:"absolute",inset:0}}></div>
+    <div className="hero"><small>Tablero de comunicación</small>
+      <h1>HOLA <b>${NOMBRE}</b></h1>
+      <button className="go" onClick=${onStart}>Iniciar</button></div></div>`;
+}
+
+/* ===== Tarjeta 3D ===== */
+function Card({w,img,edit,onTap,onRestore}){
+  const c=CATS[w.cat].c,[ti,setTi]=useState(0),src=img||w.cands[ti];
+  const move=e=>{const el=e.currentTarget,b=el.getBoundingClientRect();
+    el.style.setProperty("--ry",((e.clientX-b.left)/b.width-.5)*16+"deg");el.style.setProperty("--rx",(-((e.clientY-b.top)/b.height-.5))*16+"deg")};
+  const leave=e=>{e.currentTarget.style.setProperty("--rx","0deg");e.currentTarget.style.setProperty("--ry","0deg")};
+  return html`<div style=${{position:"relative"}}>
+    <button className="card" style=${{"--c":c}} onPointerMove=${move} onPointerLeave=${leave} onClick=${()=>onTap(w)}>
+      ${img&&html`<span className="dot"></span>`}
+      <div className="pic">${src?html`<img src=${src} alt=${w.palabra} draggable="false" onError=${()=>setTi(t=>t+1)}/>`:html`<${Ic} n=${w.icono}/>`}</div>
+      <div className="lbl">${w.palabra}</div></button>
+    ${edit&&img&&html`<button className="rm" title="Restaurar ícono" onClick=${()=>onRestore(key(w.palabra))}>×</button>`}</div>`;
+}
+
+/* ===== App ===== */
+function App(){
+  const [stage,setStage]=useState("intro"),[leaving,setLeaving]=useState(false);
+  const [cat,setCat]=useState("all"),[edit,setEdit]=useState(false),[imgs,setImgs]=useState(()=>window.IMAGENES||{}),[sent,setSent]=useState([]),[rep,setRep]=useState(null);
+  const [auto,setAuto]=useState(true),[rate,setRate]=useState(.92);
+  const one=useRef(),many=useRef(),dir=useRef(),target=useRef();
+  useEffect(()=>{dbAll().then(o=>setImgs(p=>({...p,...o}))).catch(()=>{})},[]);
+  useEffect(()=>{window.__rate=rate},[rate]);
+  useEffect(()=>{try{speechSynthesis.getVoices()}catch(e){}},[]);
+  const start=()=>{speak("Hola "+NOMBRE);setLeaving(true);setTimeout(()=>setStage("board"),750)};
+  const tap=w=>{
+    if(edit){target.current=key(w.palabra);one.current.value="";one.current.click();return}
+    if(auto)speak(w.palabra.toLowerCase());setSent(s=>[...s,w]);
+  };
+  const bulk=async files=>{
+    const out={},miss=[];let ok=0;
+    for(const f of Array.from(files)){
+      if(!/\.(jpe?g|jepg|png|webp|gif|bmp|avif)$/i.test(f.name)&&!(f.type||"").startsWith("image/"))continue;
+      const k=norm(f.name);
+      if(!KS.has(k)){miss.push(f.name);continue}
+      try{out[k]=await shrink(f);dbSet(k,out[k]);ok++}catch(e){miss.push(f.name)}
+    }
+    setImgs(p=>({...p,...out}));setRep({ok,miss});
+  };
+  const single=async e=>{const f=e.target.files[0];if(!f)return;try{const d=await shrink(f);dbSet(target.current,d);setImgs(p=>({...p,[target.current]:d}))}catch(x){}};
+  const restore=k=>{dbSet(k,null);setImgs(p=>{const q={...p};delete q[k];return q})};
+  const exportar=()=>{const o={};Object.keys(imgs).forEach(k=>{if(KS.has(k))o[k]=imgs[k]});
+    const a=document.createElement("a");a.href=URL.createObjectURL(new Blob(["window.IMAGENES="+JSON.stringify(o)+";"],{type:"text/javascript"}));a.download="imagenes.js";a.click();setTimeout(()=>URL.revokeObjectURL(a.href),2000)};
+  const list=useMemo(()=>cat==="all"?W:W.filter(w=>w.cat===cat),[cat]);
+  if(stage==="intro")return html`<${Intro} onStart=${start} leaving=${leaving}/>`;
+  const n=Object.keys(imgs).filter(k=>KS.has(k)).length;
+  return html`<div className=${"app"+(edit?" edit":"")}>
+    <div className="bar">
+      <div className="sent">
+        <div className="chips">${sent.length?sent.map((w,i)=>html`<span key=${i} className="chip" style=${{"--c":CATS[w.cat].c}}>${w.palabra}</span>`):html`<span className="ph">Toca los pictogramas para armar una frase…</span>`}</div>
+        <button className="b3 pri" onClick=${()=>sent.length&&speak(sent.map(w=>w.palabra.toLowerCase()).join(" "))}>▶ Hablar frase completa</button>
+        <button className="b3" onClick=${()=>setSent(s=>s.slice(0,-1))}>⌫ Borrar último</button>
+        <button className="b3" onClick=${()=>setSent([])}>Limpiar todo</button>
+      </div>
+      <div className="tabs">
+        <button className=${"btn"+(auto?" on":"")} onClick=${()=>setAuto(!auto)}>🔊 Voz al tocar: ${auto?"sí":"no"}</button>
+        <label className="rng">Velocidad <input type="range" min=".6" max="1.4" step=".05" value=${rate} onChange=${e=>setRate(+e.target.value)}/></label>
+        <span className="sp"></span>
+        <button className=${"btn"+(edit?" on":"")} onClick=${()=>{setEdit(!edit);setRep(null)}}>✎ ${edit?"Terminar edición":"Editar imágenes"}</button>
+      </div>
+      ${edit&&html`<div className="panel">
+        <span>Toca un pictograma para cambiar su imagen. Con imagen subida: <b>${n}</b> / ${KS.size}</span>
+        <button className="btn" onClick=${()=>{many.current.value="";many.current.click()}}>⬆ Subir varias imágenes</button>
+        <button className="btn" onClick=${()=>{dir.current.value="";dir.current.click()}}>📁 Subir carpeta</button>
+        <button className="btn pri" onClick=${exportar}>⬇ Descargar imagenes.js (dejarlas fijas)</button>
+        <button className="btn" onClick=${()=>{if(confirm("¿Restaurar todos los íconos?")){dbClear();setImgs({});setRep(null)}}}>Restaurar todo</button>
+        ${rep&&html`<span style=${{flexBasis:"100%"}}>Emparejadas: <b>${rep.ok}</b>.${rep.miss.length?html` Sin pareja (${rep.miss.length}): ${rep.miss.slice(0,12).map((m,i)=>html`<code key=${i}>${m}</code> `)}${rep.miss.length>12?"…":""}`:" Todo emparejado ✓"}</span>`}
+      </div>`}
+    </div>
+    <div className="shell">
+      <nav className="side">
+        <button className=${"tab"+(cat==="all"?" sel":"")} onClick=${()=>setCat("all")}>Todas (${W.length})</button>
+        ${Object.entries(CATS).map(([k,v])=>html`<button key=${k} className=${"tab"+(cat===k?" sel":"")} style=${{"--c":v.c}} onClick=${()=>setCat(k)}>${v.n}</button>`)}
+      </nav>
+      <div className="grid">${list.map(w=>html`<${Card} key=${w.cat+w.palabra} w=${w} img=${imgs[key(w.palabra)]} edit=${edit} onTap=${tap} onRestore=${restore}/>`)}</div>
+    </div>
+    <input ref=${one} type="file" accept="image/*,.jepg" hidden onChange=${single}/>
+    <input ref=${many} type="file" accept="image/*,.jepg" multiple hidden onChange=${e=>bulk(e.target.files)}/>
+    <input ref=${dir} type="file" webkitdirectory="" directory="" multiple hidden onChange=${e=>bulk(e.target.files)}/>
+  </div>`;
+}
+ReactDOM.createRoot(document.getElementById("root")).render(React.createElement(App));
+</script>
+</body>
+</html>
